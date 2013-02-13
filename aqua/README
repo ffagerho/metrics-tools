@@ -1,0 +1,51 @@
+AQUA - Automatic QUality Analyser
+=================================
+
+AQUA is a colletion of tools that facilitates automatic analysis of
+bug tracking system data, mailing list archives and program code. It
+was written for my Master's Thesis in Computer Science: Measuring and
+tracking quality factors in Free and Open Source Software projects,
+and was used to analyse data from a number of real-life FOSS projects.
+The graphs produced by this tool are print-quality and were used directly
+in the thesis.
+
+Overview
+--------
+
+The overall architecture is centered around an SQL database (PostgreSQL).
+Some of the tools are used to parse data from different sources, convert
+it into relational form, and insert it into the database. Others process
+the data and produce some kind of output, numerical or graphical.
+
+The bug tracking data can be obtained using HTTP queries from Bugzilla and
+Gforge systems. The import_bugs.py tool fetches bugs from these systems,
+parsing the obtained data and inserting it into the database.
+
+The mailing list data is processed from local files that can be stored in
+standard Unix mbox files. The files can be optionally compressed using bzip2
+or gzip. The import_mailinglist.py tool extracts available data and inserts
+it into the database. Due to the fact that mailing list archives are often
+corrupted or contain invalid data, the program uses heuristics to obtain as
+much data as possible. A certain error margin is allowed.
+
+The program code can be obtained from Subversion and Git repositories. The
+import_code.py tool downloads revisions of the code and runs a configurable
+set of metrics on each revision. The number of revisions to download can be
+chosen by setting an interval, and the program will skip that many revisions
+on each run. The results of each metric is inserted into the database.
+
+The output from the database is processed as a number of queries. They
+can be found in the queries directory.
+
+The program is modular to some extent. The backend functionality is contained
+in different modules, but the tools themselves do contain important heuristics
+to correct the inconsistencies that occur in the input data. Thus, while the
+modules can be reused, care must be taken not to assume that the backend
+functionality is foolproof. The design philosophy is to expose errors, and
+work around them as late as possible, close to the user interface.
+
+The tools do not form a coherent framework. They are intended to solve
+specific problems for the thesis, not be completely reusable components.
+
+For further information, see http://www.cs.helsinki.fi/~ffagerho/ and
+http://urn.fi/URN:NBN:fi-fe20072050 .

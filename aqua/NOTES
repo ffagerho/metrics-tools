@@ -1,0 +1,95 @@
+Preparing the svn checkout
+--------------------------
+
+- .svn dirs must be excluded, must perhaps export the source to a temporary dir
+
+sloccount
+---------
+
+sloccount \
+	--datadir /tmp/sloccount.data \
+	--duplicates \
+	--wide \
+	--details \
+	--addlangall \
+	-- \
+	project_dir
+
+- data dir must exist
+- has locale issues (set LANG=C to avoid)
+- has problems with blender source code but copes (it seems)
+- pretty slow on large code base (could be made less problematic by running
+  only on changed code)
+- outputs a bunch of files into datadir, which can be parsed, OR (perhaps more
+  suitable for us) outputs a list of files in the format:
+  <num_of_lines> <file_type> <directory> <path>
+- apparently can't exclude .svn dirs
+
+flawfinder
+----------
+
+flawfinder \
+	--singleline \
+	--quiet
+
+- has problems with blender source code to the degree that it's unusable
+
+rats
+----
+
+rats \
+	--xml \
+	source_dir
+
+- outputs an xml tree. description:
+  - <vulnerability> nodes describe a vulnerability. a <severity> node inside
+    that says how severe the vulnerability is.
+  - in that node, there will be <file> nodes, with <name> nodes inside saying
+    which file (names) contain the vulnerability, and <line> nodes saying
+	which line(s) the vulnerability was found on.
+- seems to automatically ignore .svn dirs
+
+CCCC
+----
+
+cccc \
+	--outdir=/tmp/cccc.data \
+	-
+
+- provide list of files to process on stdin; can't exclude files that it
+  doesn't know how to calculate metrics for, so list must exclude them
+- find source_dir -type f \
+     "(" -iname '*.c' -o -iname '*.h' -o -iname '*.cpp' ")" -a \
+	 -not -wholename '*/.svn/*' -print | \
+	 cccc --outdir=/tmp/cccc.data - > cccc.log 2>&1
+- find source_dir -type f -not -wholename '*/.svn/*' -print will produce a
+  suitable list
+- cccc.xml holds overall data
+- all other xml files hold data for the individual modules
+- cccc.db is a database dump of all the data. the data attributes are
+  separated by @. the number of attributes is variable. the first column is
+  the data item type:
+  CCCC_Member
+  CCCC_MemExt
+  CCCC_ModExt
+  CCCC_Module
+  CCCC_RejExt
+  CCCC_UseExt
+  CCCC_UseRel
+
+
+ctags
+-----
+
+ctags \
+	--declarations \
+	--defines \
+	--globals \
+	--ignore-indentation \
+	--typedefs \
+	--typedefs-and-c++ \
+	file ...
+
+- command line becomes too long if we use command substitution, so run for
+  each file in turn and use --append
+
